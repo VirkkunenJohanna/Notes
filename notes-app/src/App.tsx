@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 type Note = {
@@ -13,6 +13,21 @@ const App = () => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+
+    useEffect(() => {
+      const fetchNotes = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/api/notes");
+          const notes: Note[] = await response.json();
+          setNotes(notes);
+        } catch (e) {
+          console.log(e);
+          console.log("Höh");
+        }
+      };
+      fetchNotes();
+      console.log("Höh");
+    }, []);
 
     const handleNoteClick = (note: Note) => {
       setSelectedNote(note);
@@ -92,13 +107,29 @@ const App = () => {
       setSelectedNote(null);
     };
 
-    const deleteNote = (event: React.MouseEvent, noteId: number) => {
+    const deleteNote = async (
+      event: React.MouseEvent,
+      noteId: number
+    ) => {
       event.stopPropagation();
-    
-      const updatedNotes = notes.filter((note) => note.id !== noteId);
-    
-      setNotes(updatedNotes);
+  
+      try {
+        await fetch(
+          `http://localhost:5000/api/notes/${noteId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        const updatedNotes = notes.filter(
+          (note) => note.id !== noteId
+        );
+  
+        setNotes(updatedNotes);
+      } catch (e) {
+        console.log(e);
+      }
     };
+  
   
   return (
     <div className="app-container">
